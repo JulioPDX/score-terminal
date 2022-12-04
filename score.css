@@ -1,0 +1,9 @@
+Screen {
+    layout: grid;
+    grid-size: 4;
+}
+
+.box {
+    text-align: left;
+    border: solid rgb(40, 47, 240);
+}

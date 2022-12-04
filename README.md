@@ -9,10 +9,11 @@ If you want to mess with the code or build on this:
 > Head to https://sportsdata.io/ and create a free developer account (for token)
 
 ```shell
-git clone
+git clone https://github.com/JulioPDX/score-terminal.git
 cd score-terminal
 python3 -m venv venv
 source venv/bin/activate
+pip install -r requirements.txt
 ```
 
 Create a `.env` file with your new token.
@@ -44,3 +45,5 @@ python3 score.py --season 2022PRE --week 1 --emoji
 ## To do
 
 I need to figure out how to refresh all the `Static` content that is displayed on an interval. At the moment the information stays at the current score without rerunning the program.
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/juliopdx)

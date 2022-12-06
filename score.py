@@ -1,6 +1,8 @@
 """Simple example to display game scores"""
 import os
 import argparse
+from datetime import datetime
+
 
 from textual.app import App, ComposeResult
 from textual.widgets import Static, Header, Footer
@@ -14,9 +16,7 @@ load_dotenv()
 TOKEN = os.getenv("TOKEN")
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--week", action="store", type=int, choices=range(1, 18)
-)
+parser.add_argument("--week", action="store", type=int, choices=range(1, 18))
 parser.add_argument(
     "--season",
     action="store",
@@ -36,7 +36,10 @@ SEASON = args.season
 EMOJI = args.emoji
 
 if not args.week:
-    seas_response = requests.get(f"https://api.sportsdata.io/v3/nfl/scores/json/CurrentWeek?key={TOKEN}")
+    seas_response = requests.get(
+        f"https://api.sportsdata.io/v3/nfl/scores/json/CurrentWeek?key={TOKEN}",
+        timeout=10,
+    )
     WEEK = seas_response.text
 else:
     WEEK = args.week
@@ -67,30 +70,52 @@ def game_info(game):
     return game_text
 
 
+def get_games():
+    """Get all the games"""
+    response = requests.get(
+        f"https://api.sportsdata.io/v3/nfl/scores/json/ScoresByWeek/{SEASON}/{WEEK}?key={TOKEN}",
+        timeout=10,
+    )
+    return response.json()
+
+
+def time_convert():
+    """Simple call to get the time"""
+    time_now = datetime.now()
+    return time_now.strftime("%H:%M:%S")
+
+
 class GameApp(App):
     """Do all the things"""
 
     CSS_PATH = "score.css"
     BINDINGS = [
         ("d", "toggle_dark", "Toggle dark mode"),
+        ("r", "refresh", "Refresh"),
         ("q", "toggle_quit", "Quit"),
     ]
 
     def compose(self) -> ComposeResult:
         """Called to add widgets to the app."""
-        yield Header()
+        yield Header(show_clock=True)
         yield Footer()
-        response = requests.get(
-            f"https://api.sportsdata.io/v3/nfl/scores/json/ScoresByWeek/{SEASON}/{WEEK}?key={TOKEN}",
-            timeout=10,
-        )
-        games = response.json()
-        for game in games:
-            yield Static(game_info(game), classes="box")
+        games = get_games()
+        for indx, game in enumerate(games):
+            yield Static(game_info(game), classes="box", id=f"game-{indx}")
+        yield Static(time_convert(), classes="box", id="time")
 
     def action_toggle_quit(self) -> None:
         """Closes app"""
         self.exit()
+
+    def action_refresh(self) -> None:
+        """Called to refresh data"""
+        games = get_games()
+        for indx, game in enumerate(games):
+            game_view = self.query_one(f"#game-{indx}", Static)
+            game_view.update(game_info(game))
+        time_view = self.query_one("#time", Static)
+        time_view.update(time_convert())
 
 
 if __name__ == "__main__":

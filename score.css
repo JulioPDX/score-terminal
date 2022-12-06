@@ -1,9 +1,9 @@
 Screen {
     layout: grid;
     grid-size: 4;
+    content-align: center middle;
 }
 
 .box {
-    text-align: left;
     border: solid rgb(40, 47, 240);
 }
